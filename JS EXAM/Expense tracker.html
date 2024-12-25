@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker</title>
+  <style>
+    body {
+      width: 100%;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-image: url('https://stampli.com/wp-content/uploads/2022/06/01-STAMPLI__-expense-accounts-hero.png'); 
+      background-size: cover;
+      background-position: center;
+      color: white; 
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: rgba(0, 0, 0, 0.6); 
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      margin-bottom: 10px;
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      background-color: #444;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #e53935;
+    }
+
+    .expense-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .expense-description {
+      flex-grow: 1;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let expenseForm = document.getElementById('expense-form');
+      let expenseList = document.getElementById('expense-list');
+      let totalExpenses = document.getElementById('total-expenses');
+      
+      let expenses = JSON.parse(localStorage.getItem('expenses')) || []; 
+      let total = expenses.reduce((sum, expense) => sum + expense.amount, 0); 
+
+      renderExpenses();
+
+      expenseForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        let description = document.getElementById('expense-description').value;
+        let amount = parseFloat(document.getElementById('expense-amount').value);
+
+        if (description && !isNaN(amount)) {
+          let expense = { description, amount };
+          expenses.push(expense);
+          total += amount;
+          localStorage.setItem('expenses', JSON.stringify(expenses)); 
+          renderExpenses();
+          expenseForm.reset();
+        }
+      });
+         
+      function renderExpenses() {
+        expenseList.innerHTML = '';
+        expenses.forEach(function(expense, index) {
+          let li = document.createElement('li');
+          li.classList.add('expense-item');
+          li.innerHTML = `
+            <span class="expense-description">${expense.description}: $${expense.amount.toFixed(2)}</span>
+            <button onclick="deleteExpense(${index})">Delete</button>
+          `;
+          expenseList.appendChild(li);
+        });
+        totalExpenses.textContent = `Total Expenses: $${total.toFixed(2)}`;
+      }
+
+      window.deleteExpense = function(index) {
+        total -= expenses[index].amount; 
+        expenses.splice(index, 1); 
+        localStorage.setItem('expenses', JSON.stringify(expenses)); 
+        renderExpenses();
+      };
+    });
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Expense Tracker</h1>
+    <form id="expense-form">
+      <label for="expense-description">Description:</label>
+      <input type="text" id="expense-description" required>
+      <label for="expense-amount">Amount:</label>
+      <input type="number" id="expense-amount" required>
+      <button type="submit">Add Expense</button>
+    </form>
+    <ul id="expense-list"></ul>
+    <div id="total-expenses">Total Expenses: $0</div>
+  </div>
+</body>
+</html>
